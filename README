@@ -1,3 +1,5 @@
+Modified version of https://github.com/bluenerv/libcloud-cli that works with OpenStack prodvider only.
+
 REQUIRES
 * cloud provider account supported by libcloud
 * python2.7 or newer
