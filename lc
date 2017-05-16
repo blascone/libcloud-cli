@@ -28,6 +28,8 @@ from libcloud.compute.deployment import MultiStepDeployment, ScriptDeployment, S
 from libcloud.compute.providers import get_driver as get_driver_compute
 from libcloud.compute.types import Provider as Provider_Compute, NodeState
 
+from libcloud.common.openstack_identity import OpenStackIdentityTokenScope
+
 import libcloud.security
 
 ########################
@@ -103,6 +105,7 @@ class Skynet(object):
 		NodeState.TERMINATED: 'terminated',
 		NodeState.PENDING: 'pending',
 		NodeState.UNKNOWN: 'unknown',
+		NodeState.STOPPED: 'stopped'
 	}
 
 	### DNS: dynamic dns methods
@@ -937,6 +940,19 @@ class Skynet(object):
 			public_key='~/.ssh/id_rsa.pub'
 		)
 
+		## new params
+                self.parser.add_option("--ex_force_auth_version")
+					  
+                self.parser.add_option("--ex_force_auth_url")
+
+                self.parser.add_option("--ex_force_base_url")
+
+                self.parser.add_option("--ex_domain_name")
+
+                self.parser.add_option("--ex_token_scope")
+
+                self.parser.add_option("--ex_tenant_name")
+
 		return self.parser.parse_args()
 
 	### INIT: config
@@ -977,7 +993,7 @@ class Skynet(object):
 				self.fail("No cloud provider setting was defined.")
 
 		provider_lc = self.options.provider.lower()
-
+		
 		if not self.options.user:
 			if provider_lc in self.settings and 'user' in self.settings[provider_lc]:
 				self.options.user = self.settings[provider_lc]['user']
@@ -1005,6 +1021,45 @@ class Skynet(object):
 		if not self.options.script:
 			if provider_lc in self.settings and 'default_deploy_script' in self.settings[provider_lc]:
 				self.options.script = self.settings[provider_lc]['default_deploy_script']
+
+		## new param
+		if not self.options.ex_force_auth_version:
+			if provider_lc in self.settings and 'ex_force_auth_version' in self.settings[provider_lc]:
+				self.options.ex_force_auth_version = self.settings[provider_lc]['ex_force_auth_version']
+			else:
+				self.fail("No ex_force_auth_version was defined for the cloud provider.")
+
+		if not self.options.ex_force_auth_url:
+                        if provider_lc in self.settings and 'ex_force_auth_url' in self.settings[provider_lc]:
+                                self.options.ex_force_auth_url = self.settings[provider_lc]['ex_force_auth_url']
+                        else:
+                                self.fail("No ex_force_auth_url was defined for the cloud provider.")
+
+		if not self.options.ex_force_base_url:
+                        if provider_lc in self.settings and 'ex_force_base_url' in self.settings[provider_lc]:
+                                self.options.ex_force_base_url = self.settings[provider_lc]['ex_force_base_url']
+                        else:
+                                self.fail("No ex_force_base_url was defined for the cloud provider.")
+
+		if not self.options.ex_domain_name:
+                        if provider_lc in self.settings and 'ex_domain_name' in self.settings[provider_lc]:
+                                self.options.ex_domain_name = self.settings[provider_lc]['ex_domain_name']
+                        else:
+                                self.fail("No ex_domain_name was defined for the cloud provider.")
+
+		if not self.options.ex_token_scope:                        
+			if provider_lc in self.settings and 'ex_token_scope' in self.settings[provider_lc]:
+                                self.options.ex_token_scope = self.settings[provider_lc]['ex_token_scope']
+                        else:
+                                self.fail("No ex_token_scope was defined for the cloud provider.")
+
+		if not self.options.ex_tenant_name:
+                        if provider_lc in self.settings and 'ex_tenant_name' in self.settings[provider_lc]:
+                                self.options.ex_tenant_name = self.settings[provider_lc]['ex_tenant_name']
+                        else:
+                                self.fail("No ex_tenant_name was defined for the cloud provider.")
+
+
 
 	### INIT: drivers
 
@@ -1039,19 +1094,30 @@ class Skynet(object):
 		"""
 		Initialize connection to cloud provider.
 		"""
-		libcloud.security.VERIFY_SSL_CERT = True
+		libcloud.security.VERIFY_SSL_CERT = False	
 		try:
 			# DNS Service
-			self.driver_dns = self.get_driver_dns()
-			self.connection_dns = self.driver_dns(self.options.user, self.options.key)
+			#self.driver_dns = self.get_driver_dns()
+			#self.connection_dns = self.driver_dns(self.options.user, self.options.key)
 
 			# Balancer Service
-			self.driver_balancer = self.get_driver_balancer()
-			self.connection_balancer = self.driver_balancer(self.options.user, self.options.key)
-
+			#self.driver_balancer = self.get_driver_balancer()
+			#self.connection_balancer = self.driver_balancer(self.options.user, self.options.key)
+			
 			# Compute Service
-			self.driver_compute = self.get_driver_compute()
-			self.connection_compute = self.driver_compute(self.options.user, self.options.key)
+			#self.driver_compute = self.get_driver_compute()
+			#self.connection_compute = self.driver_compute(self.options.user, self.options.key)
+
+			self.driver_compute = libcloud.compute.providers.get_driver(self.options.provider)
+			self.connection_compute = self.driver_compute (self.options.user,
+									self.options.key,
+									ex_force_auth_version=self.options.ex_force_auth_version,
+									ex_force_auth_url=self.options.ex_force_auth_url,
+									ex_force_base_url=self.options.ex_force_base_url,
+									ex_domain_name=self.options.ex_domain_name,
+									ex_token_scope=self.options.ex_token_scope,
+									ex_tenant_name=self.options.ex_tenant_name)			
+
 		except libcloud.types.InvalidCredsException:
 			self.fail("Invalid or missing credentials for cloud provider.")
 
