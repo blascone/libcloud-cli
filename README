@@ -16,22 +16,6 @@ Commands:
  [GENERAL]
    help <command>           Return detailed help on command
 
- [DNS]
-   list-zones               List DNS zones
-   list-zone-records        List DNS zone records
-   create-zone              Create DNS zone
-   create-zone-record       Create DNS zone record
-
- [BALANCER]
-   list-protocols           List balancer protocols
-   list-balancers           List all balancers
-   list-balancer-members    List all balancer members
-   create-balancer          Create balancer
-   balancer-node-attach     Attach compute node to balancer
-   balancer-member-attach   Attach member to balancer
-   balancer-member-detach   Detach member from balancer
-   destroy-balancer         Destroy balancer
-
  [COMPUTE]
    find-node                Find an existing node by name
    list-locations           List supported cloud locations
