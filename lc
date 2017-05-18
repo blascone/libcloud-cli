@@ -54,22 +54,6 @@ class Skynet(object):
       [GENERAL]
       help <command>           Return detailed help on command
 
-      [DNS]
-      list-zones               List DNS zones
-      list-zone-records        List DNS zone records
-      create-zone              Create DNS zone
-      create-zone-record       Create DNS zone record
-
-      [BALANCER]
-      list-protocols           List balancer protocols
-      list-balancers           List all balancers
-      list-balancer-members    List all balancer members
-      create-balancer          Create balancer
-      balancer-node-attach     Attach compute node to balancer
-      balancer-member-attach   Attach member to balancer
-      balancer-member-detach   Detach member from balancer
-      destroy-balancer         Destroy balancer
-
       [COMPUTE]
       find-node                Find an existing node by name
       list-locations           List supported cloud locations
@@ -545,8 +529,8 @@ class Skynet(object):
         try:
             # deploy our node using multistep deployment strategy
             node = self.connection_compute.deploy_node(
-                name=options.name, image=image, size=flavorId, deploy=msd)
-
+                name=options.name, image=image, size=flavorId, deploy=msd, networks= network_objects)
+            print "deploy success"
             # gets the hostname and domainname from fqdn
             hostname, domainname = options.name.split('.', 1)
 
@@ -1197,44 +1181,32 @@ class Skynet(object):
         if not self.options.ex_force_auth_version:
             if provider_lc in self.settings and 'ex_force_auth_version' in self.settings[provider_lc]:
                 self.options.ex_force_auth_version = self.settings[provider_lc]['ex_force_auth_version']
-            else:
-                self.fail(
-                    "No ex_force_auth_version was defined for the cloud provider.")
+
 
         if not self.options.ex_force_auth_url:
             if provider_lc in self.settings and 'ex_force_auth_url' in self.settings[provider_lc]:
                 self.options.ex_force_auth_url = self.settings[provider_lc]['ex_force_auth_url']
-            else:
-                self.fail(
-                    "No ex_force_auth_url was defined for the cloud provider.")
+
 
         if not self.options.ex_force_base_url:
             if provider_lc in self.settings and 'ex_force_base_url' in self.settings[provider_lc]:
                 self.options.ex_force_base_url = self.settings[provider_lc]['ex_force_base_url']
-            else:
-                self.fail(
-                    "No ex_force_base_url was defined for the cloud provider.")
+
 
         if not self.options.ex_domain_name:
             if provider_lc in self.settings and 'ex_domain_name' in self.settings[provider_lc]:
                 self.options.ex_domain_name = self.settings[provider_lc]['ex_domain_name']
-            else:
-                self.fail(
-                    "No ex_domain_name was defined for the cloud provider.")
+
 
         if not self.options.ex_token_scope:
             if provider_lc in self.settings and 'ex_token_scope' in self.settings[provider_lc]:
                 self.options.ex_token_scope = self.settings[provider_lc]['ex_token_scope']
-            else:
-                self.fail(
-                    "No ex_token_scope was defined for the cloud provider.")
+
 
         if not self.options.ex_tenant_name:
             if provider_lc in self.settings and 'ex_tenant_name' in self.settings[provider_lc]:
                 self.options.ex_tenant_name = self.settings[provider_lc]['ex_tenant_name']
-            else:
-                self.fail(
-                    "No ex_tenant_name was defined for the cloud provider.")
+
 
     # INIT: drivers
 

@@ -42,7 +42,7 @@ Options:
 	-P PROTOCOL, --protocol=PROTOCOL     Protocol of balancer [default: http]
 	-a ALGORITHM, --algorithm=ALGORITHM  Algorithm of balancer [default: round-
 				                               robin]
-	-s SIZE, --size=SIZE                 Size of image to create, as MB of RAM
+	-f FLAVOR, --flavorId=FLAVOR         Id of flavor to use
 	-i IMAGE, --image=IMAGE              Name of image to use
 	-w SECONDS, --wait=SECONDS           When creating or finding nodes, wait up
 																			 to WAIT seconds until the node is
