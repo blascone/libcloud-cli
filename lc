@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# bla
+
 
 
 import os
@@ -52,17 +52,17 @@ class Skynet(object):
 
     Commands:
       [GENERAL]
-      help <command>           Return detailed help on command
+      help <command>           Returns detailed help on command
 
       [COMPUTE]
-      find-node                Find an existing node by name
-      list-locations           List supported cloud locations
-      list-sizes               List all valid server sizes
-      list-images              List all available server images
-      list-nodes               List all existing nodes
-      create-node              Create a new node
-      deploy-node              Create, deploy and bootstrap a new node with custom ssh key
-      destroy-node             Destroy an existing node
+      find-node                Finds an existing node by name
+      list-locations           Lists supported cloud locations
+      list-flavors             Lists all valid server flavors
+      list-images              Lists all available server images
+      list-nodes               Lists all existing nodes
+      create-node              Creates a new node
+      deploy-node              Creates, deploys and bootstraps a new node with custom ssh key
+      destroy-node             Destroys an existing node
 
       [STORAGE]
       ...
@@ -300,7 +300,7 @@ class Skynet(object):
 
     def cmd_destroy_balancer(self, options, arguments):
         """
-        Destroy balancer
+        Destroys balancer
 
         Usage: %prog [options] destroy-balancer -n name
         """
@@ -321,7 +321,7 @@ class Skynet(object):
 
     def cmd_find_node(self, options, arguments):
         """
-        Find a single node by id and print its details.
+        Finds a single node by id and prints its details.
 
         Usage: %prog [options] find-node -n <id>
         """
@@ -341,7 +341,7 @@ class Skynet(object):
 
     def cmd_list_locations(self, options, arguments):
         """
-        Fetch a list of locations.
+        Fetches a list of locations.
 
         Usage: %prog [options] list-locations
         """
@@ -352,9 +352,9 @@ class Skynet(object):
 
         self.succeed(data=locations)
 
-    def cmd_list_sizes(self, options, arguments):
+    def cmd_list_flavors(self, options, arguments):
         """
-        Fetch a list of all available server sizes.
+        Fetches a list of all available server sizes.
 
         Usage: %prog [options] list-sizes
         """
@@ -367,7 +367,7 @@ class Skynet(object):
 
     def cmd_list_images(self, options, arguments):
         """
-        Fetch a list of all available server images.
+        Fetches a list of all available server images.
 
         Usage: %prog [options] list-images
         """
@@ -381,7 +381,7 @@ class Skynet(object):
 
     def cmd_list_networks(self, options, arguments):
         """
-        Fetch a list of all available networks.
+        Fetches a list of all available networks.
 
         Usage: %prog [options] list-netorks
         """
@@ -395,7 +395,7 @@ class Skynet(object):
 
     def cmd_list_nodes(self, options, arguments):
         """
-        Fetch a list of all registered nodes.
+        Fetches a list of all registered nodes.
 
         Usage: %prog [options] list-nodes
         """
@@ -408,7 +408,7 @@ class Skynet(object):
 
     def cmd_create_node(self, options, arguments):
         """
-        Create a new node and print its details. If a node with the same name already existed, print its details instead.
+        Creates a new node and prints its details. If a node with the same name already existed, prints its details instead.
 
         Usage: %prog [options] create-node --name <fqdn>
         """
@@ -473,7 +473,7 @@ class Skynet(object):
 
     def cmd_deploy_node(self, options, arguments):
         """
-        Create, deploy and bootstrap a new node and print its details. If a node with the same name already existed, print its details instead.
+        Creates, deploys and bootstraps a new node and prints its details. If a node with the same name already existed, prints its details instead.
 
         Usage: %prog [options] deploy-node --name <fqdn>
         """
@@ -565,7 +565,7 @@ class Skynet(object):
 
     def cmd_destroy_node(self, options, arguments):
         """
-        Destroy a single node by name.
+        Destroys a single node by name.
 
         Usage: %prog [options] destroy-node --name <fqdn>
         """
@@ -585,7 +585,7 @@ class Skynet(object):
 
     def cmd_help(self, options, arguments):
         """
-        Return more detailed help on command
+        Returns more detailed help on command
 
         Usage: %prog [options] help <command>
         """
@@ -603,7 +603,7 @@ class Skynet(object):
 
     def find_zone(self, name):
         """
-        Find a zone type object based on its name.
+        Finds a zone type object based on its name.
         """
         try:
             zones = self.connection_dns.list_zones()
@@ -614,7 +614,7 @@ class Skynet(object):
 
     def find_balancer(self, name):
         """
-        Find a balancer type object based on its name.
+        Finds a balancer type object based on its name.
         """
         try:
             balancers = self.connection_balancer.list_balancers()
@@ -625,7 +625,7 @@ class Skynet(object):
 
     def find_size(self, ram):
         """
-        Find a node size object based on its ram.
+        Finds a node size object based on its ram.
         """
         try:
             sizes = self.connection_compute.list_sizes()
@@ -637,7 +637,7 @@ class Skynet(object):
 
     def find_flavor(self, flavorId):
         """
-        Find a flavor based on its id.
+        Finds a flavor based on its id.
         """
         try:
             flavor = self.connection_compute.ex_get_size(flavorId)
@@ -648,7 +648,7 @@ class Skynet(object):
 
     def find_network(self, networkid):
         """
-        Find network object based on its id.
+        Finds network object based on its id.
         """
         try:
             networks = self.connection_compute.ex_list_networks()
@@ -661,7 +661,7 @@ class Skynet(object):
 
     def find_image(self, id):
         """
-        Find an image type object based on its name.
+        Finds an image type object based on its name.
         """
         try:
             image = self.connection_compute.get_image(id)
@@ -672,7 +672,7 @@ class Skynet(object):
 
     def find_image_by_name(self, name):
         """
-        Find an image type object based on its name.
+        Finds an image type object based on its name.
         """
         try:
             images = self.connection_compute.list_images()
@@ -684,7 +684,7 @@ class Skynet(object):
 
     def find_node_by_name(self, name):
         """
-        Find a node object based on its name.
+        Finds a node object based on its name.
         """
         print "finding node"
         try:
@@ -697,7 +697,7 @@ class Skynet(object):
 
     def find_node(self, id):
         """
-        Find a node object based on its name.
+        Finds a node object based on its name.
         """
         try:
             node = self.connection_compute.ex_get_node_details(id)
@@ -751,7 +751,7 @@ class Skynet(object):
 
     def fail(self, message):
         """
-        Print an error message and stop execution with an error code.
+        Prints an error message and stops execution with an error code.
         """
         output = self.get_output(message=message)
         self.print_formatted_output(output)
@@ -759,7 +759,7 @@ class Skynet(object):
 
     def succeed(self, message=None, data=None, data_type="default"):
         """
-        Print a success message and any provided data, then stop execution.
+        Prints a success message and any provided data, then stops execution.
         """
         output = self.get_output(
             message=message, data=data, data_type=data_type)
@@ -768,7 +768,7 @@ class Skynet(object):
 
     def get_output(self, message=None, data=None, data_type="default"):
         """
-        Return a dictionary to be used as a content source for output.
+        Returns a dictionary to be used as a content source for output.
         """
         output = {}
         if message:
@@ -790,7 +790,7 @@ class Skynet(object):
 
     def prepare_output_item(self, item, data_type):
         """
-        Convert a single data item into a dictionary for our output dictionary.
+        Converts a single data item into a dictionary for our output dictionary.
         """
         format_method_name = 'get_output_for_' + data_type
         method = getattr(self, format_method_name)
@@ -809,7 +809,7 @@ class Skynet(object):
 
     def get_output_for_record_type(self, record_type):
         """
-        Convert a single 'record_type' data item into a dictionary for our output dictionary.
+        Converts a single 'record_type' data item into a dictionary for our output dictionary.
         """
         result = OrderedDict()
         result['key'] = self.record_type_map[record_type]
@@ -817,7 +817,7 @@ class Skynet(object):
 
     def get_output_for_zone(self, zone):
         """
-        Convert a single 'zone' data item into a dictionary for our output dictionary.
+        Converts a single 'zone' data item into a dictionary for our output dictionary.
         """
         values = zone.__dict__.copy()
 
@@ -844,7 +844,7 @@ class Skynet(object):
 
     def get_output_for_balancer(self, balancer):
         """
-        Convert a single 'balancer' data item into a dictionary for our output dictionary.
+        Converts a single 'balancer' data item into a dictionary for our output dictionary.
         """
         values = balancer.__dict__.copy()
 
@@ -869,7 +869,7 @@ class Skynet(object):
 
     def get_output_for_size(self, size):
         """
-        Convert a single 'size' data item into a dictionary for our output dictionary.
+        Converts a single 'size' data item into a dictionary for our output dictionary.
         """
         result = OrderedDict()
         result["id"] = size.id
@@ -882,7 +882,7 @@ class Skynet(object):
 
     def get_output_for_image(self, image):
         """
-        Convert a single 'image' data item into a dictionary for our output dictionary.
+        Converts a single 'image' data item into a dictionary for our output dictionary.
         """
         result = OrderedDict()
         result["id"] = image.id
@@ -891,7 +891,7 @@ class Skynet(object):
 
     def get_output_for_network(self, network):
         """
-        Convert a single 'network' data item into a dictionary for our output dictionary.
+        Converts a single 'network' data item into a dictionary for our output dictionary.
         """
         result = OrderedDict()
         result["id"] = network.id
@@ -902,7 +902,7 @@ class Skynet(object):
 
     def get_output_for_node(self, node):
         """
-        Convert a single 'node' data item into a dictionary for our output dictionary.
+        Converts a single 'node' data item into a dictionary for our output dictionary.
         """
         values = node.__dict__.copy()
 
@@ -922,7 +922,7 @@ class Skynet(object):
 
     def print_formatted_output(self, output):
         """
-        Format and print our output dictionary.
+        Formats and prints our output dictionary.
         """
         if self.options.human:
             self.print_text_output(output)
@@ -933,7 +933,7 @@ class Skynet(object):
 
     def print_simple_output(self, output):
         """
-        Print an output dictionary as text.
+        Prints an output dictionary as text.
         """
         if 'message' in output:
             print output['message']
@@ -944,13 +944,13 @@ class Skynet(object):
 
     def print_json_output(self, output):
         """
-        Print an output dictionary as json.
+        Prints an output dictionary as json.
         """
         print json.dumps(output, indent=2, sort_keys=True)
 
     def print_text_output(self, output):
         """
-        Print an output dictionary as text.
+        Prints an output dictionary as text.
         """
         if 'message' in output:
             print output['message']
@@ -962,13 +962,13 @@ class Skynet(object):
 
     def print_line_item(self, item):
         """
-        Print a single data item from an output dictionary as text.
+        Prints a single data item from an output dictionary as text.
         """
         print item.values()
 
     def print_item(self, item):
         """
-        Print a single data item from an output dictionary as text.
+        Prints a single data item from an output dictionary as text.
         """
         for key in item.keys():
             print "%s: %s" % (key, item[key])
@@ -1041,19 +1041,19 @@ class Skynet(object):
         self.parser.add_option("--wait", "-w",
                                metavar="SECONDS",
                                type="int",
-                               help="When creating or finding nodes, wait up to WAIT seconds until the node is running before returning"
+                               help="When creating or finding nodes, waits up to WAIT seconds until the node is running before returning"
                                )
 
         self.parser.add_option("--human",
                                action="store_true",
                                dest="human",
-                               help="Return results in human readable format"
+                               help="Returns results in human readable format"
                                )
 
         self.parser.add_option("--json",
                                action="store_true",
                                dest="json",
-                               help="Return results in json format"
+                               help="Returns results in json format"
                                )
 
         self.parser.add_option("--provider",
@@ -1114,13 +1114,13 @@ class Skynet(object):
 
     def get_config_path(self):
         """
-        Retrieve the path to the config file.
+        Retrieves the path to the config file.
         """
         return os.path.expanduser(self.options.config_file)
 
     def process_ini_files(self):
         """
-        Load any config files into our settings property.
+        Loads any config files into our settings property.
         """
         try:
             config_path = self.get_config_path()
@@ -1138,7 +1138,7 @@ class Skynet(object):
 
     def set_defaults_from_ini(self):
         """
-        Apply defaults from our config files over any missing options.
+        Applies defaults from our config files over any missing options.
         """
 
         if not self.options.provider:
@@ -1212,7 +1212,7 @@ class Skynet(object):
 
     def get_driver_dns(self):
         """
-        Get the libcloud driver based on the provider option.
+        Gets the libcloud driver based on the provider option.
         """
         if hasattr(Provider_DNS, self.options.provider.upper() + "_US"):
             return get_driver_dns(getattr(Provider_DNS, self.options.provider.upper() + "_US"))
@@ -1222,7 +1222,7 @@ class Skynet(object):
 
     def get_driver_balancer(self):
         """
-        Get the libcloud driver based on the provider option.
+        Gets the libcloud driver based on the provider option.
         """
         if hasattr(Provider_Balancer, self.options.provider.upper() + "_US"):
             return get_driver_balancer(getattr(Provider_Balancer, self.options.provider.upper() + "_US"))
@@ -1232,7 +1232,7 @@ class Skynet(object):
 
     def get_driver_compute(self):
         """
-        Get the libcloud driver based on the provider option.
+        Gets the libcloud driver based on the provider option.
         """
         if hasattr(Provider_Compute, self.options.provider.upper()):
             return get_driver_compute(getattr(Provider_Compute, self.options.provider.upper()))
@@ -1242,7 +1242,7 @@ class Skynet(object):
 
     def init_connection(self):
         """
-        Initialize connection to cloud provider.
+        Initializes connection to cloud provider.
         """
         libcloud.security.VERIFY_SSL_CERT = False
         try:
@@ -1276,7 +1276,7 @@ class Skynet(object):
 
     def dispatch(self):
         """
-        Find and execute the command method.
+        Finds and executes the command method.
         """
         arguments = copy.copy(self.arguments)
         options = copy.copy(self.options)
@@ -1293,7 +1293,7 @@ class Skynet(object):
 
     def get_command_method(self, command):
         """
-        Given a command name, return the command method.
+        Given a command name, returns the command method.
         """
         if not command:
             return None
@@ -1320,7 +1320,7 @@ class DocstringHelpFormatter (HelpFormatter):
 
     def trim(self, docstring):
         """
-        Trim a doctring to remove indendation, as per PEP 257
+        Trims a doctring to remove indendation, as per PEP 257
         """
         if not docstring:
             return ''
@@ -1345,7 +1345,7 @@ class DocstringHelpFormatter (HelpFormatter):
 
 def is_dict_like(obj):
     """
-    Check if the object appears to be dictionary-like.
+    Checks if the object appears to be dictionary-like.
     """
     if obj and (hasattr(obj, '__dict__') or (hasattr(obj, 'keys') and hasattr(obj, '__getitem__'))):
         return True
@@ -1355,7 +1355,7 @@ def is_dict_like(obj):
 
 def is_list_like(obj):
     """
-    Check if the object appears to be list-like.
+    Checks if the object appears to be list-like.
     """
     if obj and (not hasattr(obj, 'keys')) and hasattr(obj, '__getitem__'):
         return True

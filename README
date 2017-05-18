@@ -14,24 +14,24 @@ Usage: lc <command> [options|arguments] ...
 
 Commands:
  [GENERAL]
-   help <command>           Return detailed help on command
+   help <command>           Returns detailed help on command
 
  [COMPUTE]
-   find-node                Find an existing node by name
-   list-locations           List supported cloud locations
-   list-sizes               List all valid server sizes
-   list-images              List all available server images
-   list-nodes               List all existing nodes
-   create-node              Create a new node
-   deploy-node              Create, deploy and bootstrap a new node with custom ssh key
-   destroy-node             Destroy an existing node
+   find-node                Finds an existing node by name
+   list-locations           Lists supported cloud locations
+   list-sizes               Lists all valid server sizes
+   list-images              Lists all available server images
+   list-nodes               Lists all existing nodes
+   create-node              Creates a new node
+   deploy-node              Creates, deploys and bootstraps a new node with custom ssh key
+   destroy-node             Destroys an existing node
 
 [STORAGE]
    ...
 
 Options:
-	--version                            show program's version number and exit
-	-h, --help                           show this help message and exit
+	--version                            shows program's version number and exit
+	-h, --help                           shows this help message and exit
 	-I ID, --id=ID                       ID for zone|balancer|compute node
 	-n NAME, --name=NAME                 Name for zone|balancer|compute node
 	-t TYPE, --type=TYPE                 Type of zone
