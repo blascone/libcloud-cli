@@ -50,7 +50,11 @@ class Skynet(object):
 
     Commands:
       [GENERAL]
+<<<<<<< HEAD
+      help <command>           Return detailed help on command
+=======
       help <command>           Returns detailed help on command
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 
       [COMPUTE]
       find-node                Finds an existing node by name
@@ -97,6 +101,27 @@ class Skynet(object):
     }
 
 
+<<<<<<< HEAD
+=======
+    def cmd_destroy_balancer(self, options, arguments):
+        """
+        Destroys balancer
+
+        Usage: %prog [options] destroy-balancer -n name
+        """
+        if options.name is None and options.id is None:
+            self.fail("destroy-balancer requires the name or id as arguments.")
+
+        balancer = self.wait_for_running_balancer(options.name)
+
+        if not balancer:
+            self.fail("No running balancer found with name \"%s\"" %
+                      options.name)
+        elif self.connection_balancer.destroy_balancer(balancer):
+            self.succeed(message="Balancer \"%s\" destroyed!" % options.name)
+        else:
+            self.fail("Could not destroy balancer \"%s\"" % options.name)
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 
     
     # COMPUTE: dynamic compute methods
@@ -383,6 +408,30 @@ class Skynet(object):
 
     # HELPER: helper methods
 
+<<<<<<< HEAD
+=======
+    def find_zone(self, name):
+        """
+        Finds a zone type object based on its name.
+        """
+        try:
+            zones = self.connection_dns.list_zones()
+        except Exception as e:
+            self.fail("Exception: %s" % e)
+
+        return next((zone for zone in zones if name == zone.domain), None)
+
+    def find_balancer(self, name):
+        """
+        Finds a balancer type object based on its name.
+        """
+        try:
+            balancers = self.connection_balancer.list_balancers()
+        except Exception as e:
+            self.fail("Exception: %s" % e)
+
+        return next((balancer for balancer in balancers if name == balancer.name), None)
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 
     def find_size(self, ram):
         """
@@ -558,6 +607,41 @@ class Skynet(object):
         result['key'] = self.record_type_map[record_type]
         return result
 
+<<<<<<< HEAD
+=======
+    def get_output_for_zone(self, zone):
+        """
+        Converts a single 'zone' data item into a dictionary for our output dictionary.
+        """
+        values = zone.__dict__.copy()
+
+        result = OrderedDict()
+        result['id'] = values['id']
+        result['domain'] = values['domain']
+        result['type'] = values['type']
+        result['ttl'] = values['ttl']
+        result['extra'] = values['extra']
+        return result
+
+    def get_output_for_zone_record(self, record):
+        """
+        """
+        values = record.__dict__.copy()
+
+        result = OrderedDict()
+        result['id'] = values['id']
+        result['name'] = values['name']
+        result['type'] = self.record_type_map[values['type']]
+        result['data'] = values['data']
+        result['extra'] = values['extra']
+        return result
+
+    def get_output_for_balancer(self, balancer):
+        """
+        Converts a single 'balancer' data item into a dictionary for our output dictionary.
+        """
+        values = balancer.__dict__.copy()
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 
 
 
@@ -892,6 +976,28 @@ class Skynet(object):
 
     # INIT: drivers
 
+<<<<<<< HEAD
+=======
+    def get_driver_dns(self):
+        """
+        Gets the libcloud driver based on the provider option.
+        """
+        if hasattr(Provider_DNS, self.options.provider.upper() + "_US"):
+            return get_driver_dns(getattr(Provider_DNS, self.options.provider.upper() + "_US"))
+        else:
+            self.fail("Could not find cloud provider with name \"%s\"." %
+                      self.options.provider + "_US")
+
+    def get_driver_balancer(self):
+        """
+        Gets the libcloud driver based on the provider option.
+        """
+        if hasattr(Provider_Balancer, self.options.provider.upper() + "_US"):
+            return get_driver_balancer(getattr(Provider_Balancer, self.options.provider.upper() + "_US"))
+        else:
+            self.fail("Could not find cloud provider with name \"%s\"." %
+                      self.options.provider + "_US")
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 
     def get_driver_compute(self):
         """

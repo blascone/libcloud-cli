@@ -42,9 +42,14 @@ Options:
 	-p PORT, --port=PORT                 Port of balancer
 	-m MEMBER, --member=MEMBER           Node name of member
 	-P PROTOCOL, --protocol=PROTOCOL     Protocol of balancer [default: http]
+<<<<<<< HEAD
+	-a ALGORITHM, --algorithm=ALGORITHM  Algorithm of balancer [default: round-robin]
+	-s SIZE, --size=SIZE                 Size of image to create, as MB of RAM
+=======
 	-a ALGORITHM, --algorithm=ALGORITHM  Algorithm of balancer [default: round-
 				                               robin]
 	-f FLAVOR, --flavorId=FLAVOR         Id of flavor to use
+>>>>>>> 9658ddf7145b939313bf8fbc93f82e86d4783988
 	-i IMAGE, --image=IMAGE              Name of image to use
 	-w SECONDS, --wait=SECONDS           When creating or finding nodes, wait up
 					     to WAIT seconds until the node is running before returning
