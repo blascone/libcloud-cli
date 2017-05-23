@@ -1,7 +1,7 @@
 [default]
 provider: openstack
 
-[rackspace]
+[openstack]
 user: YOUR_USER
 key: YOUR_KEY
 ex_force_auth_version: PASSWORD
