@@ -29,9 +29,7 @@ from libcloud.dns.base import Zone, Record
 from libcloud.dns.providers import get_driver as get_driver_dns
 from libcloud.dns.types import Provider as Provider_DNS, RecordType
 
-from libcloud.loadbalancer.base import LoadBalancer, Algorithm, Member
-from libcloud.loadbalancer.providers import get_driver as get_driver_balancer
-from libcloud.loadbalancer.types import Provider as Provider_Balancer, State
+
 
 from libcloud.compute.deployment import MultiStepDeployment, ScriptDeployment, SSHKeyDeployment
 from libcloud.compute.providers import get_driver as get_driver_compute
@@ -53,22 +51,6 @@ class Skynet(object):
     Commands:
       [GENERAL]
       help <command>           Return detailed help on command
-
-      [DNS]
-      list-zones               List DNS zones
-      list-zone-records        List DNS zone records
-      create-zone              Create DNS zone
-      create-zone-record       Create DNS zone record
-
-      [BALANCER]
-      list-protocols           List balancer protocols
-      list-balancers           List all balancers
-      list-balancer-members    List all balancer members
-      create-balancer          Create balancer
-      balancer-node-attach     Attach compute node to balancer
-      balancer-member-attach   Attach member to balancer
-      balancer-member-detach   Detach member from balancer
-      destroy-balancer         Destroy balancer
 
       [COMPUTE]
       find-node                Find an existing node by name
@@ -103,11 +85,7 @@ class Skynet(object):
         RecordType.REDIRECT: 'redirect'
     }
 
-    loadbalancer_state_map = {
-        State.RUNNING: 'running',
-        State.PENDING: 'pending',
-        State.UNKNOWN: 'unknown'
-    }
+
 
     compute_state_map = {
         NodeState.RUNNING: 'running',
@@ -118,221 +96,9 @@ class Skynet(object):
         NodeState.STOPPED: 'stopped'
     }
 
-    # DNS: dynamic dns methods
 
-    def cmd_list_recordtypes(self, options, arguments):
-        """
-        List all recordtypes.
 
-        Usage: %prog [options] list-recordtypes
-        """
-        try:
-            record_types = self.connection_dns.list_record_types()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=record_types, data_type='record_type')
-        # self.succeed(data=record_types)
-
-    def cmd_list_zones(self, options, arguments):
-        """
-        List all zones.
-
-        Usage: %prog [options] list-zones
-        """
-        try:
-            zones = self.connection_dns.list_zones()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=zones, data_type='zone')
-
-    def cmd_list_zone_records(self, options, arguments):
-        """
-        List all records for a given zone.
-
-        Usage: %prog [options] list-records (-n zone_name | -I id)
-        """
-
-        # TODO
-        # if options.name not null
-        #   zone = self.find_zone(options.name)
-        # else if options.id not null
-        #   zone = selt.connection_dns.get_zone(self, options.id
-        # else
-        #   self.fail("list-zone-records requires the domain_name or id as arguments.")
-
-        if options.name is None and options.id is None:
-            self.fail(
-                "list-zone-records requires the zone_name or id as arguments.")
-
-        zone = self.find_zone(options.name)
-        if (not zone):
-            self.fail("Zone does not exist.")
-
-        try:
-            records = self.connection_dns.list_records(zone)
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=records, data_type='zone_record')
-
-    # BALANCER: dynamic balancer methods
-
-    def cmd_list_protocols(self, options, arguments):
-        """
-        List all balancer protocols.
-
-        Usage: %prog [options] list-protocols
-        """
-        try:
-            protocols = self.connection_balancer.list_protocols()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=protocols)
-
-    def cmd_list_balancers(self, options, arguments):
-        """
-        Fetch a list of all registered balancers.
-
-        Usage: %prog [options] list-balancers
-        """
-        try:
-            balancers = self.connection_balancer.list_balancers()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=balancers, data_type='balancer')
-
-    def cmd_list_balancer_members(self, options, arguments):
-        """
-        Fetch a list of all balancer members from balancer name or id.
-
-        Usage: %prog [options] list-balancer-members (-n name | -I id)
-        """
-        if options.name is None and options.id is None:
-            self.fail(
-                "list-balancer-members requires the name or id as arguments.")
-
-        balancer = self.wait_for_running_balancer(options.name)
-
-        try:
-            members = self.connection_balancer.balancer_list_members(balancer)
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=members, data_type='balancer_member')
-
-    def cmd_create_balancer(self, options, arguments):
-        """
-        Create balancer
-
-        Usage: %prog [options] create-balancer -n name -p port [-P protocol] [-a algorithm] addr1:port1 addr2:port2 ...
-        """
-        members = []
-        for member in arguments:
-            addr, port = member.split(":")
-            members.append(Member(None, addr, port))
-
-        if options.name is None or len(members) == 0:
-            self.fail(
-                "create-balancer requires the name and port along with addr:port as arguments.")
-
-        try:
-            balancer = self.connection_balancer.create_balancer(
-                name=options.name, port=options.port, protocol=options.protocol, algorithm=Algorithm.LEAST_CONNECTIONS, members=members)
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=balancer, data_type='balancer')
-
-    def cmd_balancer_node_attach(self, options, arguments):
-        """
-        Attach node to balancer
-
-        Usage: %prog [options] balancer-node-attach -n balancer_name -m node_name
-        """
-        if options.name is None and options.member is None:
-            self.fail(
-                "balancer-node-attach requires the balancer name and node name as arguments.")
-
-        balancer = self.wait_for_running_balancer(options.name)
-        node = self.wait_for_running_node(options.member)
-
-        try:
-            #self.connection_balancer.balancer_attach_compute_node(balancer=balancer, node=node)
-            balancer.attach_compute_node(node=node)
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=balancer, data_type='balancer')
-
-    def cmd_balancer_member_attach(self, options, arguments):
-        """
-        Usage: %prog [options] balancer-member-attach -n name addr:port
-        """
-        members = []
-        for member in arguments:
-            addr, port = member.split(":")
-            members.append(Member(None, addr, port))
-
-        if options.name is None and len(members) == 0:
-            self.fail(
-                "balancer-member-attach requires the name along with addr:port as arguments.")
-
-        balancer = self.wait_for_running_balancer(options.name)
-
-        try:
-            #self.connection_balancer.balancer_attach_member(balancer=balancer, member=members[0])
-            balancer.attach_member(member=members[0])
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=balancer, data_type='balancer')
-
-    def cmd_balancer_member_detach(self, options, arguments):
-        """
-        Usage: %prog [options] balancer-member-detach -n name addr:port
-        """
-        members = []
-        for member in arguments:
-            addr, port = member.split(":")
-            members.append(Member(None, addr, port))
-
-        if options.name is None and len(members) == 0:
-            self.fail(
-                "balancer-member-detach requires the name along with addr:port as arguments.")
-
-        balancer = self.wait_for_running_balancer(options.name)
-
-        try:
-            #self.connection_balancer.balancer_attach_member(balancer=balancer, member=members[0])
-            balancer.detach_member(member=members[0])
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        self.succeed(data=balancer, data_type='balancer')
-
-    def cmd_destroy_balancer(self, options, arguments):
-        """
-        Destroy balancer
-
-        Usage: %prog [options] destroy-balancer -n name
-        """
-        if options.name is None and options.id is None:
-            self.fail("destroy-balancer requires the name or id as arguments.")
-
-        balancer = self.wait_for_running_balancer(options.name)
-
-        if not balancer:
-            self.fail("No running balancer found with name \"%s\"" %
-                      options.name)
-        elif self.connection_balancer.destroy_balancer(balancer):
-            self.succeed(message="Balancer \"%s\" destroyed!" % options.name)
-        else:
-            self.fail("Could not destroy balancer \"%s\"" % options.name)
-
+    
     # COMPUTE: dynamic compute methods
 
     def cmd_find_node(self, options, arguments):
@@ -368,11 +134,11 @@ class Skynet(object):
 
         self.succeed(data=locations)
 
-    def cmd_list_sizes(self, options, arguments):
+    def cmd_list_flavors(self, options, arguments):
         """
         Fetch a list of all available server sizes.
 
-        Usage: %prog [options] list-sizes
+        Usage: %prog [options] list-flavors
         """
         try:
             sizes = self.connection_compute.list_sizes()
@@ -617,27 +383,6 @@ class Skynet(object):
 
     # HELPER: helper methods
 
-    def find_zone(self, name):
-        """
-        Find a zone type object based on its name.
-        """
-        try:
-            zones = self.connection_dns.list_zones()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        return next((zone for zone in zones if name == zone.domain), None)
-
-    def find_balancer(self, name):
-        """
-        Find a balancer type object based on its name.
-        """
-        try:
-            balancers = self.connection_balancer.list_balancers()
-        except Exception as e:
-            self.fail("Exception: %s" % e)
-
-        return next((balancer for balancer in balancers if name == balancer.name), None)
 
     def find_size(self, ram):
         """
@@ -723,25 +468,7 @@ class Skynet(object):
         return node
 
 
-    def wait_for_running_balancer(self, name, poll_period=2, timeout=30):
-        """
-        Find a balancer object based on its name, waiting for it to be running.
 
-        This method blocks up to timeout seconds until the node object is
-        confirmed to be running.  After the timeout, it may return a non-running
-        node, so you still need to check the state before performing
-        further operations on the node.
-        """
-        elapsed_time = 0
-        while elapsed_time < timeout:
-            balancer = self.find_balancer(name)
-            if not balancer:
-                return None
-            if balancer.state == 0:
-                return balancer
-            time.sleep(poll_period)
-            elapsed_time = elapsed_time + poll_period
-        return balancer
 
     def wait_for_running_node(self, id, poll_period=2, timeout=30):
         """
@@ -831,57 +558,9 @@ class Skynet(object):
         result['key'] = self.record_type_map[record_type]
         return result
 
-    def get_output_for_zone(self, zone):
-        """
-        Convert a single 'zone' data item into a dictionary for our output dictionary.
-        """
-        values = zone.__dict__.copy()
 
-        result = OrderedDict()
-        result['id'] = values['id']
-        result['domain'] = values['domain']
-        result['type'] = values['type']
-        result['ttl'] = values['ttl']
-        result['extra'] = values['extra']
-        return result
 
-    def get_output_for_zone_record(self, record):
-        """
-        """
-        values = record.__dict__.copy()
 
-        result = OrderedDict()
-        result['id'] = values['id']
-        result['name'] = values['name']
-        result['type'] = self.record_type_map[values['type']]
-        result['data'] = values['data']
-        result['extra'] = values['extra']
-        return result
-
-    def get_output_for_balancer(self, balancer):
-        """
-        Convert a single 'balancer' data item into a dictionary for our output dictionary.
-        """
-        values = balancer.__dict__.copy()
-
-        result = OrderedDict()
-        result['id'] = values['id']
-        result['name'] = values['name']
-        result['ip'] = values['ip']
-        result['port'] = values['port']
-        result['state'] = self.loadbalancer_state_map[values['state']]
-        return result
-
-    def get_output_for_balancer_member(self, member):
-        """
-        """
-        values = member.__dict__.copy()
-
-        result = OrderedDict()
-        result['id'] = values['id']
-        result['ip'] = values['ip']
-        result['port'] = values['port']
-        return result
 
     def get_output_for_size(self, size):
         """
@@ -1008,11 +687,11 @@ class Skynet(object):
             usage='', version="%prog 1.10.1", formatter=formatter)
 
         self.parser.add_option("--id", "-I",
-                               help="ID for zone|balancer|compute node"
+                               help="ID for compute node"
                                )
 
         self.parser.add_option("--name", "-n",
-                               help="Name for zone|balancer|compute node"
+                               help="Name for compute node"
                                )
 
         self.parser.add_option("--type", "-t",
@@ -1028,21 +707,8 @@ class Skynet(object):
                                help="Extra attributes of zone"
                                )
 
-        self.parser.add_option("--port", "-p",
-                               type="int",
-                               help="Port of balancer"
-                               )
-
         self.parser.add_option("--member", "-m",
                                help="Node name of member"
-                               )
-
-        self.parser.add_option("--protocol", "-P",
-                               help="Protocol of balancer [default: http]"
-                               )
-
-        self.parser.add_option("--algorithm", "-a",
-                               help="Algorithm of balancer [default: round-robin]"
                                )
 
         self.parser.add_option("--flavorId", "-f",
@@ -1238,25 +904,6 @@ class Skynet(object):
 
     # INIT: drivers
 
-    def get_driver_dns(self):
-        """
-        Get the libcloud driver based on the provider option.
-        """
-        if hasattr(Provider_DNS, self.options.provider.upper() + "_US"):
-            return get_driver_dns(getattr(Provider_DNS, self.options.provider.upper() + "_US"))
-        else:
-            self.fail("Could not find cloud provider with name \"%s\"." %
-                      self.options.provider + "_US")
-
-    def get_driver_balancer(self):
-        """
-        Get the libcloud driver based on the provider option.
-        """
-        if hasattr(Provider_Balancer, self.options.provider.upper() + "_US"):
-            return get_driver_balancer(getattr(Provider_Balancer, self.options.provider.upper() + "_US"))
-        else:
-            self.fail("Could not find cloud provider with name \"%s\"." %
-                      self.options.provider + "_US")
 
     def get_driver_compute(self):
         """
@@ -1274,20 +921,7 @@ class Skynet(object):
         """
         libcloud.security.VERIFY_SSL_CERT = False
         try:
-            # DNS Service
-            #self.driver_dns = self.get_driver_dns()
-            #self.connection_dns = self.driver_dns(self.options.user, self.options.key)
-
-            # Balancer Service
-            #self.driver_balancer = self.get_driver_balancer()
-            #self.connection_balancer = self.driver_balancer(self.options.user, self.options.key)
-
-            # Compute Service
-            #self.driver_compute = self.get_driver_compute()
-            #self.connection_compute = self.driver_compute(self.options.user, self.options.key)
-
-            self.driver_compute = libcloud.compute.providers.get_driver(
-                self.options.provider)
+            self.driver_compute = libcloud.compute.providers.get_driver(self.options.provider)
             self.connection_compute = self.driver_compute(self.options.user,
                                                           self.options.key,
                                                           ex_force_auth_version=self.options.ex_force_auth_version,
