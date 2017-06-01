@@ -119,7 +119,7 @@ class Skynet(object):
         if node:
             self.succeed(data=node, data_type='node')
         else:
-            self.fail("No node found with id \"%s\"" % options.id)
+            self.succeed(data=None, message="No node found with id \"%s\"" % options.id)
 
     def cmd_list_locations(self, options, arguments):
         """
@@ -241,7 +241,7 @@ class Skynet(object):
             self.fail("Exception: %s" % e)
 
         if self.options.wait:
-            print "checking if running " + str(node.id)
+            #print "checking if running " + str(node.id)
             running_node = self.wait_for_running_node(
                 node.id, timeout=self.options.wait)
         else:
