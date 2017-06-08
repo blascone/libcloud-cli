@@ -50,17 +50,20 @@ class Skynet(object):
 
     Commands:
       [GENERAL]
-      help <command>           Returns detailed help on command
+      help <command>           		Returns detailed help on command
 
       [COMPUTE]
-      find-node                Finds an existing node by name
-      list-locations           Lists supported cloud locations
-      list-flavors             Lists all valid server flavors
-      list-images              Lists all available server images
-      list-nodes               Lists all existing nodes
-      create-node              Creates a new node
-      deploy-node              Creates, deploys and bootstraps a new node with custom ssh key
-      destroy-node             Destroys an existing node
+      find-node                		Finds an existing node by name
+      find-floatingip			Finds a floating ip from the ip
+      list-locations           		Lists supported cloud locations
+      list-flavors             		Lists all valid server flavors
+      list-images              		Lists all available server images
+      list-nodes               		Lists all existing nodes
+      list-floatingips         		Lists all floating ips
+      list-floatingip-pools		Lists all floating ip pools
+      create-node              		Creates a new node
+      deploy-node              		Creates, deploys and bootstraps a new node with custom ssh key
+      destroy-node             		Destroys an existing node
 
       [STORAGE]
       ...
@@ -120,6 +123,25 @@ class Skynet(object):
             self.succeed(data=node, data_type='node')
         else:
             self.succeed(data=None, message="No node found with id \"%s\"" % options.id)
+
+
+
+    def cmd_find_floatingip(self, options, arguments):
+        """
+        Finds a floating ip by ip and prints its details.
+
+        Usage: %prog [options] find-floatingip - <id>
+        """
+        if options.addressip is None:
+            self.fail("find-floatingip requires the ip of the floatingip")
+
+        floatingip = self.find_floatingip(options.addressip)
+
+        if floatingip:
+            self.succeed(data=floatingip, data_type='floatingip')
+        else:
+            self.succeed(data=None, message="No floatingip found with ip \"%s\"" % options.addressip)
+
 
     def cmd_list_locations(self, options, arguments):
         """
@@ -188,6 +210,56 @@ class Skynet(object):
 
         self.succeed(data=nodes, data_type='node')
 
+
+    def cmd_list_floatingips(self, options, arguments):
+        """
+        Fetches a list of all floating ips.
+
+        Usage: %prog [options] list-floatingips
+        """
+	floatingips = self.list_floatingips(options.unmapped)
+
+        self.succeed(data=floatingips, data_type='floatingip')
+
+
+    def list_floatingips(self,unmapped):
+	try:
+        	# all floating ip
+		floatingips = self.connection_compute.ex_list_floating_ips()
+
+                # if unmapped flag is selected, filter all floating ips that are not associated to a node
+                if unmapped:
+                        def returnIp(x): return x.ip_address
+                        listOfFloatingIps = map(returnIp,floatingips)
+                        try:
+                                nodes = self.connection_compute.list_nodes()
+                                for node in nodes:
+                                        for public_ip in node.public_ips:
+                                                if public_ip in listOfFloatingIps:
+                                                        floatingips = filter (lambda x: x.ip_address!=public_ip , floatingips)
+                        except Exception as e:
+                                 self.fail("Exception: %s" % e)
+		return floatingips
+       	except Exception as e:
+		self.fail("Exception: %s" % e)
+		
+
+
+    def cmd_list_floatingip_pools(self, options, arguments):
+        """
+        Fetches a list of all floating ip pools available.
+
+        Usage: %prog [options] list-floatingip_pools
+
+        """
+        try:
+         floatingip_pools = self.connection_compute.ex_list_floating_ip_pools()
+        except Exception as e:
+            self.fail("Exception: %s" % e)
+
+        self.succeed(data=floatingip_pools, data_type='floatingippool')
+
+
     def cmd_create_node(self, options, arguments):
         """
         Creates a new node and prints its details. If a node with the same name already existed, prints its details instead.
@@ -247,11 +319,28 @@ class Skynet(object):
         else:
             running_node = None
 
+
+        if self.options.floatingippool:
+		# retrieving all available floating ips
+                self.options.unmapped = "true"
+                availableFloatingIps = self.list_floatingips(self.options.unmapped)
+
+		# if there are available floating ips, use the first one, else create a new one
+                if availableFloatingIps:
+			floatingip = availableFloatingIps[0]
+		else:
+			floatingip = self.connection_compute.ex_create_floating_ip(self.options.floatingippool)
+
+		# attach the floating ip to the node
+		self.connection_compute.ex_attach_floating_ip_to_node(node,floatingip)
+
         if (node):
             if (running_node):
-                node.state = running_node.state
+		node = self.find_node(node.id)
+                #node.state = running_node.state
             self.succeed(message="Node \"%s\" created!" %
                          options.name, data=node, data_type='node')
+
 
     def cmd_deploy_node(self, options, arguments):
         """
@@ -467,7 +556,16 @@ class Skynet(object):
 
         return node
 
+    def find_floatingip(self, ip):
+        """
+        Finds a floatingip object based on its ip.
+        """
+        try:
+            floatingip = self.connection_compute.ex_get_floating_ip(ip)
+        except Exception as e:
+            self.fail("Missing or invalid ip provided.")
 
+        return floatingip
 
 
     def wait_for_running_node(self, id, poll_period=2, timeout=30):
@@ -613,6 +711,27 @@ class Skynet(object):
         #result['password'] = node.extra['password']
         return result
 
+
+    def get_output_for_floatingip(self, floatingip):
+        """
+        Converts a single 'floatingip' data item into a dictionary for our output dictionary.
+        """
+        values = floatingip.__dict__.copy()
+
+        result = OrderedDict()
+        result['id'] =  values['id']
+        result['ip_address'] =  values['ip_address']
+        return result
+
+    def get_output_for_floatingippool(self, floatingippool):
+        """
+        Converts a single 'floatingippool' data item into a dictionary for our output dictionary.
+        """
+        values = floatingippool.__dict__.copy()
+        result = OrderedDict()
+        result['name'] =  values['name']
+        return result
+
     # PRINT: output
 
     def print_formatted_output(self, output):
@@ -720,6 +839,11 @@ class Skynet(object):
                                help="Name of image to use"
                                )
 
+
+        self.parser.add_option("--addressip", "-a",
+                               help="Ip address for finding a floating ip"
+                               )
+
         self.parser.add_option("--wait", "-w",
                                metavar="SECONDS",
                                type="int",
@@ -737,6 +861,18 @@ class Skynet(object):
                                dest="json",
                                help="Returns results in json format"
                                )
+
+        self.parser.add_option("--unmapped", "-u",
+                               action="store_true",
+                               dest="unmapped",
+                               help="Returns only unmmapped floating ips"
+                               )
+
+
+        self.parser.add_option("--floatingippool", "-p",
+                               help="When creating a new node, it attaches a floating ip. If there are no available ones, it creates a news one and attaches it."
+                               )
+
 
         self.parser.add_option("--provider",
                                help="Cloud provider to use"
