@@ -20,10 +20,13 @@ Commands:
 
  [COMPUTE]
    find-node                Finds an existing node by name
+   find-floatingip	    Finds a floating ip by ip and prints its details
    list-locations           Lists supported cloud locations
    list-sizes               Lists all valid server sizes
    list-images              Lists all available server images
    list-nodes               Lists all existing nodes
+   list-floatingips	    Lists all floating ips.
+   list-floatingip-pools    List of all floating ip pools available
    create-node              Creates a new node
    deploy-node              Creates, deploys and bootstraps a new node with custom ssh key
    destroy-node             Destroys an existing node
@@ -48,6 +51,12 @@ Options:
 	-i IMAGE, --image=IMAGE              Name of image to use
 	-w SECONDS, --wait=SECONDS           When creating or finding nodes, wait up
 					     to WAIT seconds until the node is running before returning
+	-u, --unmapped                        Returns only unmmapped floating ips
+  	-p FLOATINGIPPOOL, --floatingippool=FLOATINGIPPOOL
+					      When creating a new node, it attaches
+                                        	a floating ip. If there are no
+                                        	available ones, it creates a news one
+                                        	and attaches it.
 	--human                              Return results in human readable format
 	--json                               Return results in json format
 	--provider=PROVIDER                  Cloud provider to use
