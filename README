@@ -27,9 +27,14 @@ Commands:
    list-nodes               Lists all existing nodes
    list-floatingips	    Lists all floating ips.
    list-floatingip-pools    List of all floating ip pools available
+   list-volumes		    List of all volumes
    create-node              Creates a new node
    deploy-node              Creates, deploys and bootstraps a new node with custom ssh key
    destroy-node             Destroys an existing node
+   create-volume	    Creates a new volume
+   destroy-volume	    Destroys an existing volume
+   attach-volume            Attaches a volume to an existing node
+   
 
 [STORAGE]
    ...
@@ -47,7 +52,8 @@ Options:
 	-P PROTOCOL, --protocol=PROTOCOL     Protocol of balancer [default: http]
 	-a ALGORITHM, --algorithm=ALGORITHM  Algorithm of balancer [default: round-
 				                               robin]
-	-f FLAVOR, --flavorId=FLAVOR         Id of flavor to use
+	-i FLAVOR, --flavorId=FLAVOR         Id of flavor to use
+	-v VOLUMEID, --volumeId=VOLUMEID     Id of volume to use
 	-i IMAGE, --image=IMAGE              Name of image to use
 	-w SECONDS, --wait=SECONDS           When creating or finding nodes, wait up
 					     to WAIT seconds until the node is running before returning
