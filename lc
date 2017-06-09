@@ -118,6 +118,9 @@ class Skynet(object):
                 options.id, timeout=self.options.wait)
         else:
             node = self.find_node(options.id)
+	
+	#snapshots = self.connection_compute.list_volume_snapshots(node)
+	#print snapshots	
 
         if node:
             self.succeed(data=node, data_type='node')
@@ -260,6 +263,98 @@ class Skynet(object):
         self.succeed(data=floatingip_pools, data_type='floatingippool')
 
 
+    def cmd_list_volumes(self, options, arguments):
+        """
+        Fetches a list of all volumes available.
+
+        Usage: %prog [options] list-volumes
+
+        """
+        try:
+        	volumes = self.connection_compute.list_volumes()
+        except Exception as e:
+        	self.fail("Exception: %s" % e)
+
+        self.succeed(data=volumes, data_type='volume')
+
+
+
+    def cmd_create_volume(self, options, arguments):
+        """
+        Creates a new volume and prints its details. 
+
+        Usage: %prog [options] create-volume --size --name --location --snapshot --ex_volume_type
+        """
+        if options.name is None:
+            self.fail("create-volume requires the name of the volume to create")
+
+        if options.type is None:
+            self.fail("create-volume requires the type of the volume to create")
+
+        if options.size is None:
+            self.fail("create-volume requires the size of the volume to create")
+
+	volume = self.connection_compute.create_volume(options.size,options.name,ex_volume_type=options.type)
+
+	self.succeed(data=volume, data_type='volume')
+
+ 
+    def cmd_attach_volume(self, options, arguments):
+
+        if options.id is None:
+            self.fail("attach-volume requires the id of the node to attach")
+
+        if options.volumeId is None:
+            self.fail("attach-volume requires the name of the volume to attach")
+
+        if options.device is None:
+            self.fail("attach-volume requires the device of the volume to attach")
+
+	# retriving node
+        if self.options.wait:
+            node = self.wait_for_running_node(
+                options.id, timeout=self.options.wait)
+        else:
+            node = self.find_node(options.id)
+
+	if node is  None:
+                self.fail("Missing or invalid node id provided.")
+
+	# retrieving volume
+	volume = self.find_volume(options.volumeId)
+	if volume is  None:
+		self.fail("Missing or invalid volume id provided.")
+
+	try:	
+		success = self.connection_compute.attach_volume(node,volume,device=options.device)
+        except Exception as e:
+            self.fail("Exception: %s" % e)	
+
+
+	if not success:
+                self.fail("An error occured while attaching the volume " + volume.id + " to node " + node.id)
+	
+
+    def cmd_find_volume(self,options, arguments):
+        if options.volumeId is None:
+                self.fail("volume id required")
+        try:
+                volume = self.find_volume(options.volumeId)
+		if volume is None: 
+			self.fail("Missing or invalid volume id provided.")
+		self.succeed(data=volume, data_type='volume')
+	except Exception as e:
+            self.fail("Exception: %s" % e)
+
+
+    def find_volume(self,volumeId):
+	volumes = self.connection_compute.list_volumes()
+	for volume in volumes:
+		if volume.id == volumeId:
+			return volume
+	return None
+
+
     def cmd_create_node(self, options, arguments):
         """
         Creates a new node and prints its details. If a node with the same name already existed, prints its details instead.
@@ -270,10 +365,9 @@ class Skynet(object):
             self.fail("create-node requires the name of the node to create")
 
         options.name
-        node = self.find_node(options.name)
+        node = self.find_node_by_name(options.name)
         if (node):
-            self.succeed(message="Node \"%s\" already exists!" %
-                         options.name, data=node)
+            self.fail(message="Node \"%s\" already exists!" % options.name)
 
         image = self.find_image(options.image)
         if (not image):
@@ -452,6 +546,30 @@ class Skynet(object):
         else:
             self.fail("Could not destroy node \"%s\"" % options.id)
 
+
+    def cmd_destroy_volume(self, options, arguments):
+        """
+        Destroys a volume by volumeId.
+
+        Usage: %prog [options] destroy-volume --volumeId <fqdn>
+        """
+        if options.volumeId is None:
+            self.fail("destroy-volume requires the id of the volume to destroy")
+
+	try:
+		volume = self.find_volume(options.volumeId)
+		if not volume:
+			self.fail("No volume found with id \"%s\"" % options.volumeId)
+		success = self.connection_compute.destroy_volume(volume)
+        except Exception as e:
+        	self.fail("Exception: %s" % e)
+
+        if not success:
+            self.fail("No volume found with id \"%s\"" % options.volumeId)
+        else: 
+            self.succeed(message="Volume \"%s\" destroyed!" % options.volumeId)
+
+
     # HELP: cli help
 
     def cmd_help(self, options, arguments):
@@ -536,7 +654,6 @@ class Skynet(object):
         """
         Finds a node object based on its name.
         """
-        print "finding node"
         try:
             nodes = self.connection_compute.list_nodes()
         except Exception as e:
@@ -694,7 +811,7 @@ class Skynet(object):
 
 
     def get_output_for_node(self, node):
-        """
+	"""
         Converts a single 'node' data item into a dictionary for our output dictionary.
         """
         values = node.__dict__.copy()
@@ -708,7 +825,7 @@ class Skynet(object):
         result['state'] = self.compute_state_map[values['state']]
         result['private_ips'] = values['private_ips']
         result['public_ips'] = values['public_ips']
-        #result['password'] = node.extra['password']
+	result['extra'] = values['extra']
         return result
 
 
@@ -722,6 +839,20 @@ class Skynet(object):
         result['id'] =  values['id']
         result['ip_address'] =  values['ip_address']
         return result
+
+
+    def get_output_for_volume(self, volume):
+        """
+        Converts a single 'volume' data item into a dictionary for our output dictionary.
+        """
+        values = volume.__dict__.copy()
+
+        result = OrderedDict()
+        result['id'] =  values['id']
+        result['size'] =  values['size']
+	result['extra'] = values['extra']
+        return result
+
 
     def get_output_for_floatingippool(self, floatingippool):
         """
@@ -814,7 +945,7 @@ class Skynet(object):
                                )
 
         self.parser.add_option("--type", "-t",
-                               help="Type of zone"
+                               help="Type of zone/volume"
                                )
 
         self.parser.add_option("--ttl", "-l",
@@ -835,8 +966,21 @@ class Skynet(object):
                                help="Id of flavor to use"
                                )
 
+        self.parser.add_option("--volumeId", "-v",
+                               help="Id of volume to use"
+                               )
+
+        self.parser.add_option("--device", "-d",
+                               help=" Where the device is exposed, e.g. '/dev/sdb'"
+                               )
+
         self.parser.add_option("--image", "-i",
                                help="Name of image to use"
+                               )
+
+        self.parser.add_option("--size", "-s",
+			       type="int",
+                               help="Size of the volume to create"
                                )
 
 
@@ -878,10 +1022,10 @@ class Skynet(object):
                                help="Cloud provider to use"
                                )
 							   
-        self.parser.add_option("--networks", 
-								type='string',
-								action='callback',
-								callback=self.parse_array_callback,
+        self.parser.add_option("--networks",
+				type='string',
+				action='callback',
+				callback=self.parse_array_callback,
                                 dest="networks")
 
         self.parser.add_option("--user",
