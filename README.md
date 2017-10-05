@@ -2,16 +2,16 @@
 
 Modified version of https://github.com/bluenerv/libcloud-cli that works with OpenStack prodvider only.
 
-REQUIRES
+## Requires
 * cloud provider account supported by libcloud
 * python2.7 or newer
 * apache-libcloud 10.1
 
-INSTALL
+## Setup
 * create and tailor ~/.libcloud for your own environment
 * copy lc to a location in your $PATH
 
-USAGE
+## Usage
 lc is a libcloud python cli tool
 
 Usage: lc <command> [options|arguments] ...
