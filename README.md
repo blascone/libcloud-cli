@@ -14,6 +14,7 @@ Modified version of https://github.com/bluenerv/libcloud-cli that works with Ope
 ## Usage
 lc is a libcloud python cli tool
 
+```
 Usage: lc <command> [options|arguments] ...
 
 Commands:
@@ -82,3 +83,4 @@ Options:
 	  --ex_domain_name=EX_DOMAIN_NAME
 	  --ex_token_scope=EX_TOKEN_SCOPE
 	  --ex_tenant_name=EX_TENANT_NAME
+```
